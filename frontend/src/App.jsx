@@ -1,80 +1,75 @@
-import { useState } from "react";
-import axios from "axios";
+import { useState } from 'react'
+import './CadastroUsuario.css'
 
-function App() {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [imagem, setImagem] = useState(null);
-  const [resposta, setResposta] = useState(null);
+const CadastroUsuario = () => {
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    imagem: null
+  })
+  const [loading, setLoading] = useState(false)
+  const [mensagem, setMensagem] = useState('')
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
+    setLoading(true)
 
-    const formData = new FormData();
-    formData.append("nome", nome);
-    formData.append("email", email);
-    if (imagem) formData.append("imagem", imagem);
+    const data = new FormData()
+    data.append('nome', formData.nome)
+    data.append('email', formData.email)
+    data.append('imagem', formData.imagem)
 
     try {
-      const res = await axios.post("http://127.0.0.1:5000/submit", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setResposta(res.data);
-    } catch (err) {
-      console.error(err);
+      const response = await fetch('http://EC2_IP:5000/usuarios', {
+        method: 'POST',
+        body: data
+      })
+
+      if (response.ok) {
+        setMensagem('Usuário cadastrado com sucesso!')
+        setFormData({ nome: '', email: '', imagem: null })
+      } else {
+        setMensagem('Erro ao cadastrar usuário')
+      }
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setMensagem('Erro de conexão')
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Formulário com Upload e Preview de Imagem</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="text"
-            placeholder="Nome"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <input
-            type="file"
-            onChange={(e) => setImagem(e.target.files[0])}
-          />
-        </div>
-        <button type="submit" style={{ marginTop: "10px" }}>Enviar</button>
+    <div className="cadastro-container">
+      <h2>Cadastrar Usuário</h2>
+      <form onSubmit={handleSubmit} className="cadastro-form">
+        <input
+          type="text"
+          placeholder="Nome"
+          value={formData.nome}
+          onChange={(e) => setFormData({...formData, nome: e.target.value})}
+          required
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          required
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFormData({...formData, imagem: e.target.files[0]})}
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Cadastrando...' : 'Cadastrar'}
+        </button>
       </form>
-
-      {resposta && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>{resposta.mensagem}</h3>
-          <p>Nome: {resposta.nome}</p>
-          <p>Email: {resposta.email}</p>
-          {resposta.arquivo && (
-            <div>
-              <p>Imagem enviada:</p>
-              <img
-                src={`http://127.0.0.1:5000/uploads/${resposta.arquivo}`}
-                alt="Preview"
-                style={{ maxWidth: "300px", marginTop: "10px" }}
-              />
-            </div>
-          )}
-        </div>
-      )}
+      {mensagem && <p className="mensagem">{mensagem}</p>}
     </div>
-  );
+  )
 }
 
-export default App;
+export default CadastroUsuario
