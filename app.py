@@ -1,41 +1,34 @@
 import os
 import uuid
-import json
-import boto3
-import requests
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
-
-# Carregar variáveis de ambiente
-load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
-# Configurações AWS
-AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
-S3_BUCKET = os.getenv('S3_BUCKET')
-DYNAMODB_TABLE = os.getenv('DYNAMODB_TABLE')
-LAMBDA_FUNCTION = os.getenv('LAMBDA_FUNCTION')
-
-# Validação das variáveis obrigatórias
-if not all([S3_BUCKET, DYNAMODB_TABLE, LAMBDA_FUNCTION]):
-    raise ValueError("Alguma variável de ambiente obrigatória não foi definida (S3_BUCKET, DYNAMODB_TABLE, LAMBDA_FUNCTION).")
-
-# Clientes AWS
-s3_client = boto3.client('s3', region_name=AWS_REGION)
-dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
-lambda_client = boto3.client('lambda', region_name=AWS_REGION)
-table = dynamodb.Table(DYNAMODB_TABLE)
-
-# Rotas
 @app.route('/')
-def check():
-    return jsonify({'status': 'funcionando'}), 200
+def home():
+    return "Flask funcionando"
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'healthy'}), 200
+    return jsonify({
+        'status': 'healthy', 
+        'message': 'Flask está funcionando perfeitamente!',
+        'ip': '54.226.98.192',
+        'port': 5000,
+        'service': 'User Registration API'
+    }), 200
+
+@app.route('/test', methods=['GET'])
+def test_endpoint():
+    return jsonify({
+        'message': 'Teste bem-sucedido!',
+        'server': '54.226.98.192:5000',
+        'status': 'online',
+        'timestamp': '2024-01-01T00:00:00Z'
+    }), 200
 
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -45,76 +38,58 @@ def register_user():
         email = request.form.get('email')
         photo = request.files.get('photo')
         
-        if not all([name, email, photo]):
-            return jsonify({'error': 'Dados incompletos'}), 400
+        if not all([name, email]):
+            return jsonify({'error': 'Nome e email são obrigatórios'}), 400
         
         # Gerar ID único para o usuário
         user_id = str(uuid.uuid4())
         
-        # Upload da foto para o S3
-        filename = secure_filename(photo.filename)
-        s3_key = f"users/{user_id}/{filename}"
+        # Simular upload de foto (implementação real virá depois)
+        photo_url = None
+        if photo:
+            filename = secure_filename(photo.filename)
+            photo_url = f"https://s3-projeto-aws.s3.us-east-1.amazonaws.com/simulated/{user_id}/{filename}"
         
-        s3_client.upload_fileobj(
-            photo, 
-            S3_BUCKET, 
-            s3_key,
-            ExtraArgs={'ACL': 'public-read'}  # Tornar a imagem pública (opcional)
-        )
-        
-        photo_url = f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
-        
-        # Chamar a função Lambda para processar o registro
-        payload = {
+        # Simular salvamento no banco de dados
+        user_data = {
             'user_id': user_id,
             'name': name,
             'email': email,
-            'photo_url': photo_url
+            'photo_url': photo_url,
+            'status': 'registered_successfully',
+            'message': 'Dados simulados - Configure AWS para produção'
         }
         
-        response = lambda_client.invoke(
-            FunctionName=LAMBDA_FUNCTION,
-            InvocationType='RequestResponse',
-            Payload=json.dumps(payload)
-        )
-        
-        # Verificar resposta da Lambda
-        try:
-            response_payload = json.loads(response['Payload'].read())
-        except json.JSONDecodeError:
-            response_payload = {"error": "Resposta inválida da Lambda"}
-        
-        if response['StatusCode'] == 200:
-            return jsonify({
-                'message': 'Usuário registrado com sucesso',
-                'user_id': user_id,
-                'photo_url': photo_url
-            }), 200
-        else:
-            return jsonify({
-                'error': 'Erro ao processar registro',
-                'details': response_payload
-            }), 500
+        return jsonify(user_data), 200
             
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), 'details': 'Erro interno do servidor'}), 500
 
-@app.route('/users', methods=['GET'])
-def get_users():
-    try:
-        response = table.scan()
-        users = response.get('Items', [])
-        return jsonify(users), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# Exibir IP público e Health Check dinamicamente
-try:
-    public_ip = requests.get('https://checkip.amazonaws.com').text.strip()
-    print(f"IP Público: {public_ip}")
-    print(f"Health Check: http://{public_ip}:5000/health")
-except Exception as e:
-    print(f"Não foi possível obter IP público: {e}")
+@app.route('/')
+def home():
+    return jsonify({
+        'message': 'Bem-vindo à API Flask de Cadastro de Usuários',
+        'version': '1.0.0',
+        'endpoints': {
+            'health_check': '/health (GET)',
+            'register_user': '/register (POST)',
+            'test': '/test (GET)'
+        },
+        'server_ip': '54.226.98.192',
+        'documentation': 'Consulte o README para detalhes'
+    }), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("=" * 60)
+    print("🚀 INICIANDO SERVIDOR FLASK - USER REGISTRATION API")
+    print("=" * 60)
+    print("IP Público: 54.226.98.192")
+    print("Porta: 5000")
+    print("Health Check: http://54.226.98.192:5000/health")
+    print("Teste: http://54.226.98.192:5000/test")
+    print("Registro: http://54.226.98.192:5000/register")
+    print("=" * 60)
+    print("📊 Status: AGUARDANDO CONEXÕES...")
+    print("=" * 60)
+    
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)

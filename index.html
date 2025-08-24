@@ -227,6 +227,30 @@
             margin: 10px 0;
             display: inline-block;
         }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .test-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .test-health {
+            background: #28a745;
+            color: white;
+        }
+        
+        .test-api {
+            background: #17a2b8;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -292,7 +316,7 @@
                     console.log('Resposta do backend:', data);
                     
                     if (response.ok) {
-                        setMessage('Usuário cadastrado com sucesso! Os dados foram salvos no DynamoDB e a foto no S3.');
+                        setMessage('Usuário cadastrado com sucesso!');
                         setUserData(data);
                         
                         // Limpar o formulário
@@ -330,12 +354,32 @@
                 }
             };
 
+            const testHealthEndpoint = async () => {
+                try {
+                    const response = await fetch(`${backendUrl}/health`);
+                    const data = await response.json();
+                    alert(`Health Check: ${JSON.stringify(data, null, 2)}`);
+                } catch (error) {
+                    alert(`Erro no Health Check: ${error.message}`);
+                }
+            };
+
+            const testApiEndpoint = async () => {
+                try {
+                    const response = await fetch(`${backendUrl}/test`);
+                    const data = await response.json();
+                    alert(`Test API: ${JSON.stringify(data, null, 2)}`);
+                } catch (error) {
+                    alert(`Erro no Test API: ${error.message}`);
+                }
+            };
+
             return (
                 <div className="container">
                     <h1>Cadastro de Usuário</h1>
                     
                     <div style={{textAlign: 'center', marginBottom: '15px'}}>
-                       <div className="ip-display">IP da Instância: 54.226.98.192</div>
+                       <div className="ip-display">IP da Instância EC2: 54.226.98.192:5000</div>
                     </div>
                     
                     <div className="config-info">
@@ -352,15 +396,29 @@
                                 id="backend-url"
                                 value={backendUrl}
                                 onChange={(e) => setBackendUrl(e.target.value)}
-                                placeholder="http://ip-do-ec2:5000"
+                                placeholder="http://ip:5000"
                             />
                         </div>
-                        <button 
-                            onClick={testBackendConnection}
-                            style={{ padding: '8px 15px', marginRight: '10px' }}
-                        >
-                            Testar Conexão
-                        </button>
+                        <div className="test-buttons">
+                            <button 
+                                onClick={testBackendConnection}
+                                className="test-btn"
+                            >
+                                Testar Conexão
+                            </button>
+                            <button 
+                                onClick={testHealthEndpoint}
+                                className="test-btn test-health"
+                            >
+                                Testar Health
+                            </button>
+                            <button 
+                                onClick={testApiEndpoint}
+                                className="test-btn test-api"
+                            >
+                                Testar API
+                            </button>
+                        </div>
                     </div>
                     
                     <form onSubmit={handleSubmit}>
@@ -443,7 +501,7 @@
                             <div className="aws-service">DynamoDB</div>
                         </div>
                         <p style={{ marginTop: '15px', textAlign: 'center', fontSize: '14px' }}>
-                            Frontend estático sendo servido diretamente, API Flask no EC2 (IP: 3.89.32.7), 
+                            Frontend estático sendo servido diretamente, API Flask no EC2 (IP: 54.226.98.192), 
                             fotos armazenadas no S3, e dados salvos no DynamoDB via Lambda.
                         </p>
                     </div>
