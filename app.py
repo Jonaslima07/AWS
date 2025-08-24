@@ -7,9 +7,6 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
-def home():
-    return "Flask funcionando"
 
 @app.route('/health', methods=['GET'])
 def health_check():
