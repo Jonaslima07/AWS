@@ -1,515 +1,87 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Cadastro de Usuários</title>
-    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>CRUD Lambda DynamoDB</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 500px;
-            padding: 30px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-        
-        input[type="text"],
-        input[type="email"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="text"]:focus,
-        input[type="email"]:focus {
-            border-color: #667eea;
-            outline: none;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        .file-input-label {
-            display: block;
-            padding: 12px 15px;
-            background: #f8f9fa;
-            border: 2px dashed #ddd;
-            border-radius: 6px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .file-input-label:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-        
-        .preview-container {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .preview-image {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 10px;
-        }
-        
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-        
-        .submit-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .message {
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 20px;
-            text-align: center;
-            font-weight: 500;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .aws-architecture {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .aws-architecture h3 {
-            color: #333;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .architecture-diagram {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .aws-service {
-            background: white;
-            padding: 10px 15px;
-            border-radius: 6px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-weight: 500;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .aws-service::before {
-            content: "✓";
-            color: #28a745;
-            font-weight: bold;
-        }
-        
-        .config-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e9ecef;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .config-info h4 {
-            margin-bottom: 10px;
-            color: #495057;
-        }
-        
-        .connection-status {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-left: 10px;
-            font-size: 12px;
-        }
-        
-        .connected {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .disconnected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .ip-display {
-            background: #007bff;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-family: monospace;
-            margin: 10px 0;
-            display: inline-block;
-        }
-        
-        .test-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .test-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .test-health {
-            background: #28a745;
-            color: white;
-        }
-        
-        .test-api {
-            background: #17a2b8;
-            color: white;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { margin-top: 30px; }
+        input, button { margin: 5px 0; padding: 5px; }
+        .item { margin-bottom: 10px; }
+        #itemsList { margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <h1>CRUD Lambda + DynamoDB</h1>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    <h2>Criar Item</h2>
+    <form id="createForm">
+        <input type="text" id="itemName" placeholder="Nome" required><br>
+        <input type="number" id="itemPrice" placeholder="Preço" step="0.01" required><br>
+        <button type="submit">Criar Item</button>
+    </form>
+    <p id="createMessage"></p>
 
-        function UserRegistrationForm() {
-            const [name, setName] = useState('');
-            const [email, setEmail] = useState('');
-            const [photo, setPhoto] = useState(null);
-            const [previewUrl, setPreviewUrl] = useState('');
-            const [message, setMessage] = useState('');
-            const [isError, setIsError] = useState(false);
-            const [isLoading, setIsLoading] = useState(false);
-            const [backendUrl, setBackendUrl] = useState('http://54.226.98.192:5000');
-            const [userData, setUserData] = useState(null);
-            const [connectionStatus, setConnectionStatus] = useState('testing');
+    <h2>Buscar Item por ID</h2>
+    <input type="text" id="searchId" placeholder="Digite o ID">
+    <button onclick="getItemById()">Buscar</button>
+    <div id="itemResult"></div>
 
-            // Testar conexão com o backend quando o componente for montado
-            useEffect(() => {
-                testBackendConnection();
-            }, []);
+    <h2>Todos os Itens</h2>
+    <button onclick="getAllItems()">Carregar Itens</button>
+    <div id="itemsList"></div>
 
-            const handlePhotoChange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    setPhoto(file);
-                    setPreviewUrl(URL.createObjectURL(file));
-                }
-            };
+    <script>
+        const apiUrl = "https://SEU_API_ID.execute-api.sa-east-1.amazonaws.com";
 
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                
-                if (!photo) {
-                    setMessage('Por favor, selecione uma foto.');
-                    setIsError(true);
-                    return;
-                }
-                
-                setIsLoading(true);
-                setMessage('');
-                setIsError(false);
-                
-                try {
-                    // Criar FormData para enviar dados do formulário
-                    const formData = new FormData();
-                    formData.append('name', name);
-                    formData.append('email', email);
-                    formData.append('photo', photo);
-                    
-                    console.log('Enviando dados para:', `${backendUrl}/register`);
-                    
-                    // Enviar dados para o backend Flask
-                    const response = await fetch(`${backendUrl}/register`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const data = await response.json();
-                    console.log('Resposta do backend:', data);
-                    
-                    if (response.ok) {
-                        setMessage('Usuário cadastrado com sucesso!');
-                        setUserData(data);
-                        
-                        // Limpar o formulário
-                        setName('');
-                        setEmail('');
-                        setPhoto(null);
-                        setPreviewUrl('');
-                    } else {
-                        throw new Error(data.error || data.details || 'Erro ao cadastrar usuário');
-                    }
-                } catch (error) {
-                    console.error('Erro completo:', error);
-                    setMessage(error.message || 'Erro ao cadastrar usuário. Verifique a conexão com o backend.');
-                    setIsError(true);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            const testBackendConnection = async () => {
-                try {
-                    setConnectionStatus('testing');
-                    const response = await fetch(`${backendUrl}/health`);
-                    if (response.ok) {
-                        setConnectionStatus('connected');
-                        setMessage('Conexão com o backend bem-sucedida!');
-                        setIsError(false);
-                    } else {
-                        throw new Error('Backend não respondeu corretamente');
-                    }
-                } catch (error) {
-                    setConnectionStatus('disconnected');
-                    setMessage('Não foi possível conectar ao backend. Verifique a URL e se o servidor está rodando.');
-                    setIsError(true);
-                }
-            };
-
-            const testHealthEndpoint = async () => {
-                try {
-                    const response = await fetch(`${backendUrl}/health`);
-                    const data = await response.json();
-                    alert(`Health Check: ${JSON.stringify(data, null, 2)}`);
-                } catch (error) {
-                    alert(`Erro no Health Check: ${error.message}`);
-                }
-            };
-
-            const testApiEndpoint = async () => {
-                try {
-                    const response = await fetch(`${backendUrl}/test`);
-                    const data = await response.json();
-                    alert(`Test API: ${JSON.stringify(data, null, 2)}`);
-                } catch (error) {
-                    alert(`Erro no Test API: ${error.message}`);
-                }
-            };
-
-            return (
-                <div className="container">
-                    <h1>Cadastro de Usuário</h1>
-                    
-                    <div style={{textAlign: 'center', marginBottom: '15px'}}>
-                       <div className="ip-display">IP da Instância EC2: 54.226.98.192:5000</div>
-                    </div>
-                    
-                    <div className="config-info">
-                        <h4>Configuração de Backend</h4>
-                        <div className="form-group">
-                            <label htmlFor="backend-url">
-                                URL do Backend (Flask): 
-                                <span className={`connection-status ${connectionStatus === 'connected' ? 'connected' : connectionStatus === 'disconnected' ? 'disconnected' : ''}`}>
-                                    {connectionStatus === 'connected' ? 'Conectado' : connectionStatus === 'disconnected' ? 'Desconectado' : 'Testando...'}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                id="backend-url"
-                                value={backendUrl}
-                                onChange={(e) => setBackendUrl(e.target.value)}
-                                placeholder="http://ip:5000"
-                            />
-                        </div>
-                        <div className="test-buttons">
-                            <button 
-                                onClick={testBackendConnection}
-                                className="test-btn"
-                            >
-                                Testar Conexão
-                            </button>
-                            <button 
-                                onClick={testHealthEndpoint}
-                                className="test-btn test-health"
-                            >
-                                Testar Health
-                            </button>
-                            <button 
-                                onClick={testApiEndpoint}
-                                className="test-btn test-api"
-                            >
-                                Testar API
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label htmlFor="name">Nome:</label>
-                            <input
-                                type="text"
-                                id="name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        
-                        <div className="form-group">
-                            <label htmlFor="email">Email:</label>
-                            <input
-                                type="email"
-                                id="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                        
-                        <div className="form-group">
-                            <label htmlFor="photo">Foto:</label>
-                            <label htmlFor="photo" className="file-input-label">
-                                {photo ? photo.name : 'Selecione uma foto'}
-                            </label>
-                            <input
-                                type="file"
-                                id="photo"
-                                className="file-input"
-                                accept="image/*"
-                                onChange={handlePhotoChange}
-                                required
-                            />
-                        </div>
-                        
-                        {previewUrl && (
-                            <div className="preview-container">
-                                <p>Preview:</p>
-                                <img src={previewUrl} alt="Preview" className="preview-image" />
-                            </div>
-                        )}
-                        
-                        <button type="submit" className="submit-btn" disabled={isLoading || connectionStatus !== 'connected'}>
-                            {isLoading ? 'Processando...' : 'Cadastrar Usuário'}
-                        </button>
-                    </form>
-                    
-                    {message && (
-                        <div className={`message ${isError ? 'error' : 'success'}`}>
-                            {message}
-                        </div>
-                    )}
-                    
-                    {userData && (
-                        <div className="message success">
-                            <h4>Dados do Usuário Cadastrado:</h4>
-                            <p>ID: {userData.user_id}</p>
-                            <p>Nome: {userData.name}</p>
-                            <p>Email: {userData.email}</p>
-                            {userData.photo_url && (
-                                <div>
-                                    <p>Foto: <a href={userData.photo_url} target="_blank" rel="noopener noreferrer">Ver no S3</a></p>
-                                    <img src={userData.photo_url} alt="Uploaded" style={{maxWidth: '100%', marginTop: '10px', borderRadius: '8px'}} />
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    
-                    <div className="aws-architecture">
-                        <h3>Arquitetura AWS Utilizada</h3>
-                        <div className="architecture-diagram">
-                            <div className="aws-service">EC2 (Ubuntu)</div>
-                            <div className="aws-service">S3</div>
-                            <div className="aws-service">Lambda</div>
-                            <div className="aws-service">DynamoDB</div>
-                        </div>
-                        <p style={{ marginTop: '15px', textAlign: 'center', fontSize: '14px' }}>
-                            Frontend estático sendo servido diretamente, API Flask no EC2 (IP: 54.226.98.192), 
-                            fotos armazenadas no S3, e dados salvos no DynamoDB via Lambda.
-                        </p>
-                    </div>
-                </div>
-            );
+        // Função para gerar UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<UserRegistrationForm />);
+        // Criar item
+        document.getElementById("createForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = generateUUID();
+            const name = document.getElementById("itemName").value;
+            const price = parseFloat(document.getElementById("itemPrice").value);
+
+            const response = await fetch(`${apiUrl}/items`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, name, price })
+            });
+
+            const data = await response.json();
+            document.getElementById("createMessage").innerText = JSON.stringify(data);
+            getAllItems();
+        });
+
+        // Buscar item por ID
+        async function getItemById() {
+            const id = document.getElementById("searchId").value;
+            const response = await fetch(`${apiUrl}/items/${id}`);
+            const data = await response.json();
+            const resultDiv = document.getElementById("itemResult");
+            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        // Buscar todos os itens
+        async function getAllItems() {
+            const response = await fetch(`${apiUrl}/items`);
+            const data = await response.json();
+            const itemsDiv = document.getElementById("itemsList");
+            itemsDiv.innerHTML = data.map(item => `
+                <div class="item">
+                    <strong>ID:</strong> ${item.id} |
+                    <strong>Nome:</strong> ${item.name} |
+                    <strong>Preço:</strong> ${item.price.toFixed(2)}
+                </div>
+            `).join('');
+        }
     </script>
 </body>
 </html>
